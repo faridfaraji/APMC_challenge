@@ -1,3 +1,4 @@
+import os
 import boto3
 import logging
 
@@ -6,10 +7,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def get_cidr_list_from_env():
+    """
+    Retrieves the CIDR list from the CIDR_LIST environment variable.
+    The variable should contain a comma-separated list of CIDR strings.
+    Returns:
+      list: A list of CIDR strings.
+    """
+    cidr_env = os.getenv("CIDR_LIST", "")
+    if cidr_env:
+        # Split by comma and remove extra whitespace
+        return [cidr.strip() for cidr in cidr_env.split(",") if cidr.strip()]
+    else:
+        logger.error("CIDR_LIST environment variable is not set or empty.")
+        return []
+
+
 def create_input_security_group(cidr_list, region='us-west-2'):
     """
     Creates an AWS MediaLive Input Security Group with the provided CIDR list.
-    :param cidr_list: List of CIDR strings to whitelist (e.g., ["203.0.113.0/24"]).
+    :param cidr_list: List of CIDR strings to whitelist.
     :param region: AWS region.
     :return: Security Group ID if successful; None otherwise.
     """
@@ -52,10 +69,12 @@ def create_rtmp_input(input_name, security_group_id, region='us-west-2'):
 
 if __name__ == "__main__":
     input_name = "APMC_RTMPInput"
-    # Replace with the appropriate CIDR range(s) that should be allowed to stream.
-    cidr_list = ["203.0.113.0/24"]
-    # First, create the input security group.
-    security_group_id = create_input_security_group(cidr_list)
-    # If the security group was created successfully, create the RTMP input.
-    if security_group_id:
-        create_rtmp_input(input_name, security_group_id)
+    # Retrieve the CIDR list from the environment variable
+    cidr_list = get_cidr_list_from_env()
+    if cidr_list:
+        # Create the input security group.
+        security_group_id = create_input_security_group(cidr_list)
+        if security_group_id:
+            create_rtmp_input(input_name, security_group_id)
+    else:
+        logger.error("No valid CIDR list provided. Exiting script.")
