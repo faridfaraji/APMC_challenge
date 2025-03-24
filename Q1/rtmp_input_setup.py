@@ -1,39 +1,37 @@
 import boto3
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def create_input_security_group(cidr_list, region='us-west-2'):
     """
     Creates an AWS MediaLive Input Security Group with the provided CIDR list.
-    Parameters:
-      cidr_list (list): List of CIDR strings to whitelist (e.g., ["203.0.113.0/24"]).
-      region (str): AWS region.
-    Returns:
-      str: The Security Group ID if creation is successful; None otherwise.
+    :param cidr_list: List of CIDR strings to whitelist (e.g., ["203.0.113.0/24"]).
+    :param region: AWS region.
+    :return: Security Group ID if successful; None otherwise.
     """
     client = boto3.client('medialive', region_name=region)
+    whitelist_rules = [{'Cidr': cidr} for cidr in cidr_list]
     try:
-        # Prepare whitelist rules in the required format.
-        whitelist_rules = [{'Cidr': cidr} for cidr in cidr_list]
-        response = client.create_input_security_group(
-            WhitelistRules=whitelist_rules
-        )
+        response = client.create_input_security_group(WhitelistRules=whitelist_rules)
         security_group_id = response['SecurityGroup']['Id']
-        print("Input Security Group created successfully. ID:", security_group_id)
+        logger.info("Input Security Group created successfully. ID: %s", security_group_id)
         return security_group_id
     except Exception as e:
-        print("Error creating input security group:", e)
+        logger.error("Error creating input security group: %s", e)
         return None
 
 
 def create_rtmp_input(input_name, security_group_id, region='us-west-2'):
     """
     Creates an AWS MediaLive RTMP input using an existing security group.
-    Parameters:
-      input_name (str): The name for the MediaLive input.
-      security_group_id (str): The MediaLive Input Security Group ID.
-      region (str): AWS region.
-    Returns:
-      dict: The response from AWS MediaLive API if successful; None otherwise.
+    :param input_name: The name for the MediaLive input.
+    :param security_group_id: The MediaLive Input Security Group ID.
+    :param region: AWS region.
+    :return: API response if successful; None otherwise.
     """
     client = boto3.client('medialive', region_name=region)
     try:
@@ -41,14 +39,14 @@ def create_rtmp_input(input_name, security_group_id, region='us-west-2'):
             Name=input_name,
             Type='RTMP_PUSH',
             InputSecurityGroups=[security_group_id],
-            Destinations=[
-                {'StreamName': f"{input_name}-stream"}
-            ]
+            Destinations=[{'StreamName': f"{input_name}-stream"}]
         )
-        print("RTMP Input created successfully. Input ID:", response['Input']['Id'])
+        # The destination URLs may be nested differently depending on the API version
+        destinations = response.get('Input', {}).get('Destinations', [])
+        logger.info("RTMP Input created successfully. Ingest URLs: %s", destinations)
         return response
     except Exception as e:
-        print("Error creating RTMP Input:", str(e))
+        logger.error("Error creating RTMP Input: %s", e)
         return None
 
 

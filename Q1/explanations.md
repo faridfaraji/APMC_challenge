@@ -5,6 +5,8 @@
 import boto3
 
 # Initialize MediaLive client
+# It is best practice to not hard-code credentials. Use environment variables or an IAM role.
+
 client = boto3.client(
     'medialive',
     region_name=region,  # Replace with your region

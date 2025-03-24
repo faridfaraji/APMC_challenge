@@ -2,6 +2,13 @@
 ### **Live Streaming Workflow: Camera to HLS Playback**  
 ![Live Streaming Architecture](../Architecture_diagram.png)  
 
+- Onsite Components: Cameras, encoders.
+- AWS Ingest & Processing: MediaLive for transcoding and MediaPackage for packaging.
+- CDN: CloudFront distribution.
+- Security & Monitoring: Firewalls, encryption, and CloudWatch.
+- Playback: End-user HLS players.
+
+
 #### **1. Onsite Components**  
 - **1.1 Raw Feed**: Cameras capture uncompressed video/audio (e.g., SDI/HDMI).  
 - **1.2 Encoding**: RTMP stream created via encoders (e.g., FFmpeg, OBS) using H.264/H.265.  
@@ -10,7 +17,8 @@
 - **2.1 RTMP Push**: Secure SSL/TLS push to AWS MediaLive.  
 - **2.2 MediaLive**: Transcodes RTMP into multi-bitrate HLS/DASH streams.  
 - **2.3 MediaPackage**: Packages streams into HLS segments + manifests, adds DRM/ads.  
-- **3 CloudFront CDN**: Distributes HLS globally with low latency + DDoS protection.  
+#### **3 CloudFront CDN**: 
+- Distributes HLS globally with low latency + DDoS protection.  
 
 #### **Security**  
 - **Firewall Manager**: Blocks malicious traffic to AWS endpoints.  

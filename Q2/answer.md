@@ -12,9 +12,9 @@ ffmpeg -i aspect43.mp4 -vf "scale=-1:720, pad=1280:720:(1280-iw)/2:0" output.mp4
      - This resizes the video to a height of 720 pixels while preserving the aspect ratio.
      - `-1` tells FFmpeg to automatically calculate the width to maintain the original aspect ratio.
    - `pad=1280:720:(1280-iw)/2:0`:
-     - This ensures the final video has a resolution of `1280x720` by adding padding if necessary.
-     - `1280:720` sets the target width and height.
-     - `(1280-iw)/2` horizontally centers the video by calculating the left padding based on the input width (`iw`).
+     - Adds black padding.
+     - `1280:720` sets the final resolution.
+     - `(1280-iw)/2` centers the video horizontally (`iw`).
      - `0` ensures no vertical padding is added.
 3. **`output.mp4`**: Specifies the output file.
 
